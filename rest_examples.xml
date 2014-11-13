@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>REST API Examples</title>
+<date>April 2014</date>
+<author>
+<personname>
+<firstname>EhrScape</firstname>
+</personname>
+<email>info@ehrscape.com</email>
+</author>
+<authorinitials>E</authorinitials>
+<revhistory>
+<revision>
+<revnumber>1.1</revnumber>
+<date>April 2014</date>
+<authorinitials>E</authorinitials>
+</revision>
+</revhistory>
+</info>
+<section xml:id="_getting_started">
+<title>Getting Started</title>
+<simpara>This guide is designed to help you explore and learn about the API.</simpara>
+<section xml:id="_audience">
+<title>Audience</title>
+<simpara>The easiest way to start learning about the API is to study sample code.
+This tutorial is designed for people familiar with the Javascript programming concepts. There are already many good <link xlink:href="http://www.google.com/search?q=javascript+tutorials">Javascript tutorials</link>
+available on the Web. The REST API is designed to be easily accessible from any programming language – once you understand the basic concepts of the API, you will be able to apply them in most programming
+languages.</simpara>
+</section>
+<section xml:id="_pre_requisites">
+<title>Pre-requisites</title>
+<section xml:id="_supporting_libraries">
+<title>Supporting libraries</title>
+<simpara>To interact with the REST API, a client application needs to construct HTTP requests.
+For making JSON based API calls and deal with the returned data we are using jQuery javascript library. For more info see
+<link xlink:href="http://jquery.com">jQuery home page</link>.</simpara>
+</section>
+<section xml:id="_context_variables">
+<title>Context variables</title>
+<simpara>Throughout this guide we are using the following predefined variables and functions to improve the readability of the code:</simpara>
+<itemizedlist>
+<listitem>
+<simpara>variable <literal>baseUrl</literal>: holds the base url of the REST service. To get to a specific REST service
+we&#8217;ll append it to the base url, i.e.:</simpara>
+</listitem>
+</itemizedlist>
+<screen>var baseUrl = 'https://rest.ehrscape.com/rest/v1';
+var queryUrl = baseUrl + '/query';</screen>
+<itemizedlist>
+<listitem>
+<simpara>variable <literal>ehrId</literal>: holds our sample patient&#8217;s ehrId.</simpara>
+</listitem>
+<listitem>
+<simpara>function <literal>getSessionId()</literal>: is used to obtain a session (ehr session)
+used for authentication. In most applications this session is injected as part of
+the application context and would not be directly handled by javascript.</simpara>
+</listitem>
+</itemizedlist>
+</section>
+<section xml:id="_base_html_page">
+<title>Base HTML page</title>
+<simpara>All examples bellow are displaying the data retrieved from the server in a very simple HTML page.
+Here is the source of a skeleton page:</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/&gt;
+    &lt;title&gt;Think!EHR Rest Example&lt;/title&gt;
+    &lt;script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"&gt;&lt;/script&gt;
+    &lt;script src="js/example.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h3 id="header"&gt;
+    &lt;!-- header will be rendered here --&gt;
+&lt;/h3&gt;
+&lt;div id="result"&gt;
+    &lt;!-- result will be rendered here --&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</programlisting>
+</section>
+<section xml:id="_function_literal_getsessionid_literal">
+<title>Function <literal>getSessionId()</literal></title>
+<simpara>For clarity here&#8217;s a basic example of the function:</simpara>
+<programlisting language="js" linenumbering="unnumbered">function getSessionId() {
+    var response = $.ajax({
+        type: "POST",
+        url: baseUrl + "/session?username=" + encodeURIComponent(username) +
+                "&amp;password=" + encodeURIComponent(password),
+        async: false
+    });
+    return response.responseJSON.sessionId;
+}</programlisting>
+<simpara>Note: Refer to Recommendations and Best Practices in Managing HTTP-Based Client Sessions.
+There are better implementations of session handling function, but this is not the focus of this guide.</simpara>
+</section>
+</section>
+<section xml:id="_the_hello_world_example">
+<title>The "Hello World" example</title>
+<simpara>Let&#8217;s use REST API to fetch some data! The following example shows how to get information
+about body temperatures measured for a sample patient with a predefined <literal>ehrId</literal>.</simpara>
+<simpara>In this example, the following API call is used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>GET /view/{ehrId}/body_temperature</literal>: returns body temperatures measured for the specified EHR (<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/view&amp;operation=/view/%7BehrId%7D/body_temperature&amp;method=GET&amp;inline=false">see details</link>).</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajax({
+    url: baseUrl + "/view/" + ehrId + "/body_temperature",
+    type: 'GET',
+    headers: {
+        "Ehr-Session": sessionId
+    },
+    success: function (res) {
+        $("#header").append("Body Temperatures");
+        for (var i in res) {
+            $("#result").append(res[i].time + ': ' + res[i].temperature  + res[i].unit + "&lt;br&gt;");
+        }
+    }
+});</programlisting>
+<simpara>Which returns the following result:</simpara>
+<screen>Body Temperatures
+
+2014-03-05T04:01:37.000Z: 37°C
+2014-02-14T00:57:00.000Z: 37.4°C
+2014-02-07T20:44:28.000Z: 37.1°C
+2014-01-23T01:26:05.000Z: 39.7°C
+2014-01-11T16:48:31.000Z: 37°C</screen>
+<simpara>In addition to retrieving the last set of measured temperatures, it&#8217;s also possible
+to filter results by date. The API description for the body_temperature view lists a parameter <literal>from</literal>
+which requires an ISO formatted date (and possibly time) as input.
+For ISO date and time formats see <link xlink:href="http://en.wikipedia.org/wiki/ISO_8601">ISO8601</link>.</simpara>
+<simpara>Here&#8217;s an example with filtering:</simpara>
+<programlisting language="js" linenumbering="unnumbered">$.ajax({
+    url: baseUrl + "/view/" + ehrId + "/body_temperature",
+    type: 'GET',
+    data: {
+        from: '2014-3-1'
+    },
+    headers: {
+        "Ehr-Session": sessionId
+    },
+    success: function (res) {
+        $("#header").append("Body Temperatures");
+        for (var i in res) {
+            $("#result").append(res[i].time + ': ' + res[i].temperature + res[i].unit + "&lt;br&gt;");
+        }
+    }
+});</programlisting>
+<simpara>which, as expected, returns the following result:</simpara>
+<screen>Body Temperatures
+
+2014-03-05T04:01:37.000Z: 37°C</screen>
+</section>
+<section xml:id="_display_a_patient_s_name_along_with_measurement_data">
+<title>Display a patient&#8217;s name along with measurement data</title>
+<simpara>The purpose of this example is to introduce the usage of a demographic API to also print patient name
+along with the result of weight measurements.</simpara>
+<simpara>The following API calls are used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>GET /demographics/ehr/{ehrId}/party</literal>: retrieves patient&#8217;s demographic data
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/ehr/%7BehrId%7D/party&amp;method=GET&amp;inline=false">see details</link>).</simpara>
+</listitem>
+<listitem>
+<simpara><literal>GET /view/{ehrId}/weight</literal>: returns weight measurements for the specified EHR
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/view&amp;operation=/view/%7BehrId%7D/weight&amp;method=GET&amp;inline=false">see details</link>).</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajax({
+    url: baseUrl + "/demographics/ehr/" + ehrId + "/party",
+    type: 'GET',
+    headers: {
+        "Ehr-Session": sessionId
+    },
+    success: function (data) {
+        var party = data.party;
+        $("#header").append("Weight measurements for " + party.firstNames + ' ' +
+                                                         party.lastNames);
+    }
+});
+$.ajax({
+    url: baseUrl + "/view/" + ehrId + "/weight",
+    type: 'GET',
+    headers: {
+        "Ehr-Session": sessionId
+    },
+    success: function (res) {
+        for (var i in res) {
+            $("#result").append(res[i].time + ': ' + res[i].weight + res[i].unit + "&lt;br&gt;");
+        }
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>Weight measurements for Desiree Hanson
+
+2014-03-09T19:25:20.000Z: 66.7kg
+2014-02-27T00:49:07.000Z: 66.7kg
+2014-02-07T00:29:51.000Z: 65.3kg
+2014-02-03T14:03:21.000Z: 66.7kg
+2014-02-01T15:00:40.000Z: 68kg
+2014-01-02T17:48:55.000Z: 66.8kg</screen>
+</section>
+<section xml:id="_create_a_new_patient">
+<title>Create a new patient</title>
+<simpara>The purpose of this example is to show how to create a new patient via demographics API and create his or her EHR.</simpara>
+<simpara>The following API calls are used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>POST /ehr</literal>: creates a new EHR
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/ehr&amp;operation=/ehr&amp;method=POST&amp;inline=false">see details</link>).</simpara>
+</listitem>
+<listitem>
+<simpara><literal>POST /demographics/party</literal>: creates a new party in the demographics server and stores an ehrId
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/party&amp;method=POST&amp;inline=false">see details</link>).</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajaxSetup({
+    headers: {
+        "Ehr-Session": sessionId
+    }
+});
+$.ajax({
+    url: baseUrl + "/ehr",
+    type: 'POST',
+    success: function (data) {
+        var ehrId = data.ehrId;
+        $("#header").html("EHR: " + ehrId);
+
+        // build party data
+        var partyData = {
+            firstNames: "Mary",
+            lastNames: "Wilkinson",
+            dateOfBirth: "1982-7-18T19:30",
+            partyAdditionalInfo: [
+                {
+                    key: "ehrId",
+                    value: ehrId
+                }
+            ]
+        };
+        $.ajax({
+            url: baseUrl + "/demographics/party",
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(partyData),
+            success: function (party) {
+                if (party.action == 'CREATE') {
+                    $("#result").html("Created: " + party.meta.href);
+                }
+            }
+        });
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>EHR: 8521e620-d38e-4fd6-9071-f785c2ece9b3
+
+Created: https://rest.ehrscape.com/rest/v1/demographics/party/104</screen>
+</section>
+<section xml:id="_search_for_a_patient_by_name">
+<title>Search for a patient by name</title>
+<simpara>The purpose of this example is to show how to find a patient by name.</simpara>
+<simpara>The following API call is used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>POST /demographics/party/query</literal>: searches for a party using the party&#8217;s name
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/party/query&amp;method=POST&amp;inline=false">see details</link>).</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajaxSetup({
+    headers: {
+        "Ehr-Session": sessionId
+    }
+});
+var searchData = [
+    {key: "firstNames", value: "Mary"},
+    {key: "lastNames", value: "Wilkinson"}
+];
+$.ajax({
+    url: baseUrl + "/demographics/party/query",
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(searchData),
+    success: function (res) {
+        $("#header").html("Search for Mary Wilkinson");
+        for (i in res.parties) {
+            var party = res.parties[i];
+            var ehrId;
+            for (j in party.partyAdditionalInfo) {
+                if (party.partyAdditionalInfo[j].key === 'ehrId') {
+                    ehrId = party.partyAdditionalInfo[j].value;
+                    break;
+                }
+            }
+            $("#result").append(party.firstNames + ' ' + party.lastNames +
+                ' (ehrId = ' + ehrId + ')&lt;br&gt;');
+        }
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>Search for Mary Wilkinson
+
+Mary Wilkinson (ehrId = 8521e620-d38e-4fd6-9071-f785c2ece9b3)</screen>
+</section>
+<section xml:id="_search_for_a_patient_by_ehrid">
+<title>Search for a patient by ehrId</title>
+<simpara>The purpose of this example is to show how to find a patient by his or her EHR ID.</simpara>
+<simpara>The following API call is used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>POST /demographics/party/query</literal>: searches for a party using a patient&#8217;s ehrId
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/party/query&amp;method=GET&amp;inline=false">see details</link>).</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajaxSetup({
+    headers: {
+        "Ehr-Session": sessionId
+    }
+});
+var searchData = [
+    {key: "ehrId", value: "8521e620-d38e-4fd6-9071-f785c2ece9b3"}
+];
+$.ajax({
+    url: baseUrl + "/demographics/party/query",
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(searchData),
+    success: function (res) {
+        $("#header").html("Search by ehrId 8521e620-d38e-4fd6-9071-f785c2ece9b3");
+        for (i in res.parties) {
+            var party = res.parties[i];
+            $("#result").append(party.firstNames + ' ' + party.lastNames + '&lt;br&gt;');
+        }
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>Search by ehrId 8521e620-d38e-4fd6-9071-f785c2ece9b3
+
+Mary Wilkinson</screen>
+</section>
+<section xml:id="_save_a_new_set_of_measurements_of_a_patient_s_body_temperature_blood_pressure_height_and_weight">
+<title>Save a new set of measurements of a patient&#8217;s body temperature, blood pressure, height and weight</title>
+<simpara>The purpose of this example is to show how to store a new set of measurements.</simpara>
+<simpara>The following API call is used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>POST /composition</literal>: stores a new composition (document) with measurements
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/composition&amp;operation=/composition&amp;method=POST&amp;inline=false">see details</link>)</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajaxSetup({
+    headers: {
+        "Ehr-Session": sessionId
+    }
+});
+var compositionData = {
+    "ctx/time": "2014-3-19T13:10Z",
+    "ctx/language": "en",
+    "ctx/territory": "CA",
+    "vital_signs/body_temperature/any_event/temperature|magnitude": 37.1,
+    "vital_signs/body_temperature/any_event/temperature|unit": "°C",
+    "vital_signs/blood_pressure/any_event/systolic": 120,
+    "vital_signs/blood_pressure/any_event/diastolic": 90,
+    "vital_signs/height_length/any_event/body_height_length": 171,
+    "vital_signs/body_weight/any_event/body_weight": 57.2
+};
+var queryParams = {
+    "ehrId": ehrId,
+    templateId: 'Vital Signs',
+    format: 'FLAT',
+    committer: 'Belinda Nurse'
+};
+$.ajax({
+    url: baseUrl + "/composition?" + $.param(queryParams),
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(compositionData),
+    success: function (res) {
+        $("#header").html("Store composition");
+        $("#result").html(res.meta.href);
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>Store composition
+
+https://rest.ehrscape.com/rest/v1/composition/75c7bb72-0e7f-4a06-983e-73833a5c9615::ehrscape.com::1</screen>
+<simpara>Let&#8217;s retrieve one of these measurements by using the view call <literal>GET /view/{ehrId}/blood_pressure</literal>:</simpara>
+<programlisting language="js" linenumbering="unnumbered">$.ajaxSetup({
+    headers: {
+        "Ehr-Session": sessionId
+    }
+});
+$.ajax({
+    url: baseUrl + "/view/" + ehrId + "/blood_pressure",
+    type: 'GET',
+    success: function (res) {
+        $("#header").html("Blood pressures");
+        for (var i in res) {
+            $("#result").append(res[i].time + ': ' + res[i].systolic + '/' + res[i].diastolic + res[i].unit + "&lt;br&gt;");
+        }
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>Blood pressures
+
+2014-03-19T13:10:00.000Z: 120/90mm[Hg]</screen>
+</section>
+<section xml:id="_query_data_using_aql">
+<title>Query data using AQL</title>
+<simpara>The purpose of this example is to show how to use a very simple
+<link xlink:href="http://www.openehr.org/wiki/display/spec/Archetype+Query+Language+Description">AQL</link> for querying.</simpara>
+<simpara>The following API call is used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>GET /query</literal>: queries data using AQL
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/query&amp;operation=/query&amp;method=GET&amp;inline=false">see details</link>)</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">$.ajaxSetup({
+    headers: {
+        "Ehr-Session": sessionId
+    }
+});
+var aql = "SELECT c/uid/value as uid, " +
+    "c/context/start_time as time, " +
+    "c/name/value as name " +
+    "FROM EHR[ehr_id/value = '" + ehrId + "'] CONTAINS COMPOSITION c " +
+    "ORDER BY c/context/start_time DESC";
+$.ajax({
+    url: baseUrl + "/query?" + $.param({"aql": aql}),
+    type: 'GET',
+    success: function (res) {
+        $("#header").html("Compositions");
+        var rows = res.resultSet;
+        for (var i in rows) {
+            $("#result").append(rows[i].uid + ': ' + rows[i].name + ' (on ' +
+                                rows[i].time.value + ")&lt;br&gt;");
+        }
+    }
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>Compositions
+
+4f3e47ab-e350-4994-a15e-e819533aba14::ehrscape.com::1: Vital Signs (on 2014-03-09T20:25:20.000+01:00)
+fbc6d182-1720-4e99-aec9-b0f925639c66::ehrscape.com::1: Vital Signs (on 2014-03-07T18:31:54.000+01:00)
+a6568a7e-0cf9-483b-8691-adb46a9fdb6b::ehrscape.com::1: Medications (on 2014-02-09T01:08:27.000+01:00)</screen>
+</section>
+<section xml:id="_clinical_decision_support">
+<title>Clinical decision support</title>
+<simpara>The purpose of this example is to show how to execute a simple guide using the CDS API.</simpara>
+<simpara>The following API call is used:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>GET /guide/execute/{guideId}/{ehrIds}</literal>: executes CDS guide
+(<link xlink:href="https://dev.ehrscape.com/api-explorer.html?api=thinkcds&amp;service=/guide&amp;operation=/guide/execute/%7BguideId%7D/%7BehrIds%7D&amp;method=GET&amp;inline=false">see details</link>)</simpara>
+</listitem>
+</itemizedlist>
+<programlisting language="js" linenumbering="unnumbered">function bmi() {
+    return $.ajax({
+        url: cdsUrl + "/guide/execute/BMI.Calculation.v.1/" + ehrId,
+        type: 'GET',
+        headers: {
+            "Ehr-Session": sessionId
+        },
+        success: function (data) {
+            if (data instanceof Array) {
+                if (data[0].hasOwnProperty('results')) {
+                    data[0].results.forEach(function (v, k) {
+                        if (v.archetypeId === 'openEHR-EHR-OBSERVATION.body_mass_index.v1') {
+                            var rounded = Math.round(v.value.magnitude * 100.0) / 100.0;
+                            $("#result").append('BMI: ' + rounded);
+                        }
+                    })
+                }
+            }
+        }
+    });
+}
+
+function login() {
+    return $.ajax({
+        type: "POST",
+        url: baseUrl + "/session?" + $.param({username: username, password: password}),
+        success: function (res) {
+            sessionId = res.sessionId;
+        }
+    });
+}
+
+function logout() {
+    return $.ajax({
+        type: "DELETE",
+        url: baseUrl + "/session",
+        headers: {
+            "Ehr-Session": sessionId
+        }
+    });
+}
+
+login().done(function() {
+    $.when(bmi()).then(logout);
+});</programlisting>
+<simpara>which returns the following result:</simpara>
+<screen>BMI: 26.08</screen>
+</section>
+</section>
+</article>
