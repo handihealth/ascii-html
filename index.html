@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Ascii-html by handihealth</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Ascii-html</h1>
+          <h2></h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/handihealth/ascii-html/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/handihealth/ascii-html/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/handihealth/ascii-html" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <hr>
+
+<p>author:</p>
+
+<ul>
+<li>'EhrScape <a href="mailto:info@ehrscape.com">info@ehrscape.com</a>'
+date: April 2014
+title: REST API Examples
+...</li>
+</ul>
+
+<h1>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting Started</h1>
+
+<p>This guide is designed to help you explore and learn about the API.</p>
+
+<h2>
+<a id="audience" class="anchor" href="#audience" aria-hidden="true"><span class="octicon octicon-link"></span></a>Audience</h2>
+
+<p>The easiest way to start learning about the API is to study sample code.
+This tutorial is designed for people familiar with the Javascript
+programming concepts. There are already many good <a href="http://www.google.com/search?q=javascript+tutorials">Javascript
+tutorials</a>
+available on the Web. The REST API is designed to be easily accessible
+from any programming language – once you understand the basic concepts
+of the API, you will be able to apply them in most programming
+languages.</p>
+
+<h2>
+<a id="pre-requisites" class="anchor" href="#pre-requisites" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pre-requisites</h2>
+
+<h3>
+<a id="supporting-libraries" class="anchor" href="#supporting-libraries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Supporting libraries</h3>
+
+<p>To interact with the REST API, a client application needs to construct
+HTTP requests. For making JSON based API calls and deal with the
+returned data we are using jQuery javascript library. For more info see
+<a href="http://jquery.com">jQuery home page</a>.</p>
+
+<h3>
+<a id="context-variables" class="anchor" href="#context-variables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Context variables</h3>
+
+<p>Throughout this guide we are using the following predefined variables
+and functions to improve the readability of the code:</p>
+
+<ul>
+<li>  variable <code>baseUrl</code>: holds the base url of the REST service. To get
+to a specific REST service we’ll append it to the base url, i.e.:</li>
+</ul>
+
+
+
+<pre><code>var baseUrl = 'https://rest.ehrscape.com/rest/v1';
+var queryUrl = baseUrl + '/query';
+</code></pre>
+
+<ul>
+<li><p>variable <code>ehrId</code>: holds our sample patient’s ehrId.</p></li>
+<li><p>function <code>getSessionId()</code>: is used to obtain a session (ehr session)
+used for authentication. In most applications this session is
+injected as part of the application context and would not be
+directly handled by javascript.</p></li>
+</ul>
+
+<h3>
+<a id="base-html-page" class="anchor" href="#base-html-page" aria-hidden="true"><span class="octicon octicon-link"></span></a>Base HTML page</h3>
+
+<p>All examples bellow are displaying the data retrieved from the server in
+a very simple HTML page. Here is the source of a skeleton page:</p>
+
+<div class="highlight highlight-html"><pre>&lt;!DOCTYPE html&gt;
+&lt;<span class="pl-ent">html</span>&gt;
+&lt;<span class="pl-ent">head</span>&gt;
+    &lt;<span class="pl-ent">meta</span> <span class="pl-eoa">http-equiv</span>=<span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span> <span class="pl-eoa">content</span>=<span class="pl-s1"><span class="pl-pds">"</span>text/html; charset=UTF-8<span class="pl-pds">"</span></span>/&gt;
+    &lt;<span class="pl-ent">title</span>&gt;Think!EHR Rest Example&lt;/<span class="pl-ent">title</span>&gt;
+<span class="pl-s2">    &lt;<span class="pl-ent">script</span> <span class="pl-eoa">src</span>=<span class="pl-s1"><span class="pl-pds">"</span>//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+<span class="pl-s2">    &lt;<span class="pl-ent">script</span> <span class="pl-eoa">src</span>=<span class="pl-s1"><span class="pl-pds">"</span>js/example.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+&lt;/<span class="pl-ent">head</span>&gt;
+&lt;<span class="pl-ent">body</span>&gt;
+
+&lt;<span class="pl-ent">h3</span> <span class="pl-eoai">id</span>=<span class="pl-s1"><span class="pl-pds">"</span>header<span class="pl-pds">"</span></span>&gt;
+    <span class="pl-c"><span class="pl-pdc">&lt;!--</span> header will be rendered here <span class="pl-pdc">--&gt;</span></span>
+&lt;/<span class="pl-ent">h3</span>&gt;
+&lt;<span class="pl-ent">div</span> <span class="pl-eoai">id</span>=<span class="pl-s1"><span class="pl-pds">"</span>result<span class="pl-pds">"</span></span>&gt;
+    <span class="pl-c"><span class="pl-pdc">&lt;!--</span> result will be rendered here <span class="pl-pdc">--&gt;</span></span>
+&lt;/<span class="pl-ent">div</span>&gt;
+&lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<h3>
+<a id="function-getsessionid" class="anchor" href="#function-getsessionid" aria-hidden="true"><span class="octicon octicon-link"></span></a>Function <code>getSessionId()</code>
+</h3>
+
+<p>For clarity here’s a basic example of the function:</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-s">function</span> <span class="pl-enf">getSessionId</span>() {
+    <span class="pl-s">var</span> response <span class="pl-ko">=</span> $.ajax({
+        type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>,
+        url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/session?username=<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> encodeURIComponent(username) <span class="pl-ko">+</span>
+                <span class="pl-s1"><span class="pl-pds">"</span>&amp;password=<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> encodeURIComponent(password),
+        async<span class="pl-ko">:</span> <span class="pl-c1">false</span>
+    });
+    <span class="pl-k">return</span> response.responseJSON.sessionId;
+}</pre></div>
+
+<p>Note: Refer to Recommendations and Best Practices in Managing HTTP-Based
+Client Sessions. There are better implementations of session handling
+function, but this is not the focus of this guide.</p>
+
+<h2>
+<a id="the-hello-world-example" class="anchor" href="#the-hello-world-example" aria-hidden="true"><span class="octicon octicon-link"></span></a>The "Hello World" example</h2>
+
+<p>Let’s use REST API to fetch some data! The following example shows how
+to get information about body temperatures measured for a sample patient
+with a predefined <code>ehrId</code>.</p>
+
+<p>In this example, the following API call is used:</p>
+
+<ul>
+<li>  <code>GET /view/{ehrId}/body_temperature</code>: returns body temperatures
+measured for the specified EHR (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/view&amp;operation=/view/%7BehrId%7D/body_temperature&amp;method=GET&amp;inline=false">see
+details</a>).</li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/view/<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/body_temperature<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    },
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).append(<span class="pl-s1"><span class="pl-pds">"</span>Body Temperatures<span class="pl-pds">"</span></span>);
+        <span class="pl-k">for</span> (<span class="pl-s">var</span> i <span class="pl-ko">in</span> res) {
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(res[i]<span class="pl-sf">.time</span> <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>: <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> res[i].temperature  <span class="pl-ko">+</span> res[i].unit <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>&lt;br&gt;<span class="pl-pds">"</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>Which returns the following result:</p>
+
+<pre><code>Body Temperatures
+
+2014-03-05T04:01:37.000Z: 37°C
+2014-02-14T00:57:00.000Z: 37.4°C
+2014-02-07T20:44:28.000Z: 37.1°C
+2014-01-23T01:26:05.000Z: 39.7°C
+2014-01-11T16:48:31.000Z: 37°C
+</code></pre>
+
+<p>In addition to retrieving the last set of measured temperatures, it’s
+also possible to filter results by date. The API description for the
+body_temperature view lists a parameter <code>from</code> which requires an ISO
+formatted date (and possibly time) as input. For ISO date and time
+formats see <a href="http://en.wikipedia.org/wiki/ISO_8601">ISO8601</a>.</p>
+
+<p>Here’s an example with filtering:</p>
+
+<div class="highlight highlight-js"><pre>$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/view/<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/body_temperature<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+    data<span class="pl-ko">:</span> {
+        from<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>2014-3-1<span class="pl-pds">'</span></span>
+    },
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    },
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).append(<span class="pl-s1"><span class="pl-pds">"</span>Body Temperatures<span class="pl-pds">"</span></span>);
+        <span class="pl-k">for</span> (<span class="pl-s">var</span> i <span class="pl-ko">in</span> res) {
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(res[i]<span class="pl-sf">.time</span> <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>: <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> res[i].temperature <span class="pl-ko">+</span> res[i].unit <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>&lt;br&gt;<span class="pl-pds">"</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>which, as expected, returns the following result:</p>
+
+<pre><code>Body Temperatures
+
+2014-03-05T04:01:37.000Z: 37°C
+</code></pre>
+
+<h2>
+<a id="display-a-patients-name-along-with-measurement-data" class="anchor" href="#display-a-patients-name-along-with-measurement-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Display a patient’s name along with measurement data</h2>
+
+<p>The purpose of this example is to introduce the usage of a demographic
+API to also print patient name along with the result of weight
+measurements.</p>
+
+<p>The following API calls are used:</p>
+
+<ul>
+<li><p><code>GET /demographics/ehr/{ehrId}/party</code>: retrieves patient’s
+demographic data (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/ehr/%7BehrId%7D/party&amp;method=GET&amp;inline=false">see
+details</a>).</p></li>
+<li><p><code>GET /view/{ehrId}/weight</code>: returns weight measurements for the
+specified EHR (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/view&amp;operation=/view/%7BehrId%7D/weight&amp;method=GET&amp;inline=false">see
+details</a>).</p></li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/demographics/ehr/<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/party<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    },
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">data</span>) {
+        <span class="pl-s">var</span> party <span class="pl-ko">=</span> data.party;
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).append(<span class="pl-s1"><span class="pl-pds">"</span>Weight measurements for <span class="pl-pds">"</span></span> <span class="pl-ko">+</span> party.firstNames <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span> <span class="pl-pds">'</span></span> <span class="pl-ko">+</span>
+                                                         party.lastNames);
+    }
+});
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/view/<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/weight<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    },
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        <span class="pl-k">for</span> (<span class="pl-s">var</span> i <span class="pl-ko">in</span> res) {
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(res[i]<span class="pl-sf">.time</span> <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>: <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> res[i].weight <span class="pl-ko">+</span> res[i].unit <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>&lt;br&gt;<span class="pl-pds">"</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>Weight measurements for Desiree Hanson
+
+2014-03-09T19:25:20.000Z: 66.7kg
+2014-02-27T00:49:07.000Z: 66.7kg
+2014-02-07T00:29:51.000Z: 65.3kg
+2014-02-03T14:03:21.000Z: 66.7kg
+2014-02-01T15:00:40.000Z: 68kg
+2014-01-02T17:48:55.000Z: 66.8kg
+</code></pre>
+
+<h2>
+<a id="create-a-new-patient" class="anchor" href="#create-a-new-patient" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create a new patient</h2>
+
+<p>The purpose of this example is to show how to create a new patient via
+demographics API and create his or her EHR.</p>
+
+<p>The following API calls are used:</p>
+
+<ul>
+<li><p><code>POST /ehr</code>: creates a new EHR (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/ehr&amp;operation=/ehr&amp;method=POST&amp;inline=false">see
+details</a>).</p></li>
+<li><p><code>POST /demographics/party</code>: creates a new party in the demographics
+server and stores an ehrId (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/party&amp;method=POST&amp;inline=false">see
+details</a>).</p></li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajaxSetup({
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    }
+});
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/ehr<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>POST<span class="pl-pds">'</span></span>,
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">data</span>) {
+        <span class="pl-s">var</span> ehrId <span class="pl-ko">=</span> data.ehrId;
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>EHR: <span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId);
+
+        <span class="pl-c"><span class="pl-pdc">//</span> build party data</span>
+        <span class="pl-s">var</span> partyData <span class="pl-ko">=</span> {
+            firstNames<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>Mary<span class="pl-pds">"</span></span>,
+            lastNames<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>Wilkinson<span class="pl-pds">"</span></span>,
+            dateOfBirth<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>1982-7-18T19:30<span class="pl-pds">"</span></span>,
+            partyAdditionalInfo<span class="pl-ko">:</span> [
+                {
+                    key<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>ehrId<span class="pl-pds">"</span></span>,
+                    value<span class="pl-ko">:</span> ehrId
+                }
+            ]
+        };
+        $.ajax({
+            url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/demographics/party<span class="pl-pds">"</span></span>,
+            type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>POST<span class="pl-pds">'</span></span>,
+            contentType<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>application/json<span class="pl-pds">'</span></span>,
+            data<span class="pl-ko">:</span> JSON.stringify(partyData),
+            <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">party</span>) {
+                <span class="pl-k">if</span> (party.action <span class="pl-ko">==</span> <span class="pl-s1"><span class="pl-pds">'</span>CREATE<span class="pl-pds">'</span></span>) {
+                    $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>Created: <span class="pl-pds">"</span></span> <span class="pl-ko">+</span> party.meta.href);
+                }
+            }
+        });
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>EHR: 8521e620-d38e-4fd6-9071-f785c2ece9b3
+
+Created: https://rest.ehrscape.com/rest/v1/demographics/party/104
+</code></pre>
+
+<h2>
+<a id="search-for-a-patient-by-name" class="anchor" href="#search-for-a-patient-by-name" aria-hidden="true"><span class="octicon octicon-link"></span></a>Search for a patient by name</h2>
+
+<p>The purpose of this example is to show how to find a patient by name.</p>
+
+<p>The following API call is used:</p>
+
+<ul>
+<li>  <code>POST /demographics/party/query</code>: searches for a party using the
+party’s name (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/party/query&amp;method=POST&amp;inline=false">see
+details</a>).</li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajaxSetup({
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    }
+});
+<span class="pl-s">var</span> searchData <span class="pl-ko">=</span> [
+    {key<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>firstNames<span class="pl-pds">"</span></span>, value<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>Mary<span class="pl-pds">"</span></span>},
+    {key<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>lastNames<span class="pl-pds">"</span></span>, value<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>Wilkinson<span class="pl-pds">"</span></span>}
+];
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/demographics/party/query<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>POST<span class="pl-pds">'</span></span>,
+    contentType<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>application/json<span class="pl-pds">'</span></span>,
+    data<span class="pl-ko">:</span> JSON.stringify(searchData),
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>Search for Mary Wilkinson<span class="pl-pds">"</span></span>);
+        <span class="pl-k">for</span> (i <span class="pl-ko">in</span> res.parties) {
+            <span class="pl-s">var</span> party <span class="pl-ko">=</span> res.parties[i];
+            <span class="pl-s">var</span> ehrId;
+            <span class="pl-k">for</span> (j <span class="pl-ko">in</span> party.partyAdditionalInfo) {
+                <span class="pl-k">if</span> (party.partyAdditionalInfo[j].key <span class="pl-ko">===</span> <span class="pl-s1"><span class="pl-pds">'</span>ehrId<span class="pl-pds">'</span></span>) {
+                    ehrId <span class="pl-ko">=</span> party.partyAdditionalInfo[j].value;
+                    <span class="pl-k">break</span>;
+                }
+            }
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(party.firstNames <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span> <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> party.lastNames <span class="pl-ko">+</span>
+                <span class="pl-s1"><span class="pl-pds">'</span> (ehrId = <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>)&lt;br&gt;<span class="pl-pds">'</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>Search for Mary Wilkinson
+
+Mary Wilkinson (ehrId = 8521e620-d38e-4fd6-9071-f785c2ece9b3)
+</code></pre>
+
+<h2>
+<a id="search-for-a-patient-by-ehrid" class="anchor" href="#search-for-a-patient-by-ehrid" aria-hidden="true"><span class="octicon octicon-link"></span></a>Search for a patient by ehrId</h2>
+
+<p>The purpose of this example is to show how to find a patient by his or
+her EHR ID.</p>
+
+<p>The following API call is used:</p>
+
+<ul>
+<li>  <code>POST /demographics/party/query</code>: searches for a party using a
+patient’s ehrId (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/demographics&amp;operation=/demographics/party/query&amp;method=GET&amp;inline=false">see
+details</a>).</li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajaxSetup({
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    }
+});
+<span class="pl-s">var</span> searchData <span class="pl-ko">=</span> [
+    {key<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>ehrId<span class="pl-pds">"</span></span>, value<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>8521e620-d38e-4fd6-9071-f785c2ece9b3<span class="pl-pds">"</span></span>}
+];
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/demographics/party/query<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>POST<span class="pl-pds">'</span></span>,
+    contentType<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>application/json<span class="pl-pds">'</span></span>,
+    data<span class="pl-ko">:</span> JSON.stringify(searchData),
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>Search by ehrId 8521e620-d38e-4fd6-9071-f785c2ece9b3<span class="pl-pds">"</span></span>);
+        <span class="pl-k">for</span> (i <span class="pl-ko">in</span> res.parties) {
+            <span class="pl-s">var</span> party <span class="pl-ko">=</span> res.parties[i];
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(party.firstNames <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span> <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> party.lastNames <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>&lt;br&gt;<span class="pl-pds">'</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>Search by ehrId 8521e620-d38e-4fd6-9071-f785c2ece9b3
+
+Mary Wilkinson
+</code></pre>
+
+<h2>
+<a id="save-a-new-set-of-measurements-of-a-patients-body-temperature-blood-pressure-height-and-weight" class="anchor" href="#save-a-new-set-of-measurements-of-a-patients-body-temperature-blood-pressure-height-and-weight" aria-hidden="true"><span class="octicon octicon-link"></span></a>Save a new set of measurements of a patient’s body temperature, blood pressure, height and weight</h2>
+
+<p>The purpose of this example is to show how to store a new set of
+measurements.</p>
+
+<p>The following API call is used:</p>
+
+<ul>
+<li>  <code>POST /composition</code>: stores a new composition (document) with
+measurements (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/composition&amp;operation=/composition&amp;method=POST&amp;inline=false">see
+details</a>)</li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajaxSetup({
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    }
+});
+<span class="pl-s">var</span> compositionData <span class="pl-ko">=</span> {
+    <span class="pl-s1"><span class="pl-pds">"</span>ctx/time<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>2014-3-19T13:10Z<span class="pl-pds">"</span></span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>ctx/language<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>en<span class="pl-pds">"</span></span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>ctx/territory<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>CA<span class="pl-pds">"</span></span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>vital_signs/body_temperature/any_event/temperature|magnitude<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-cn">37.1</span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>vital_signs/body_temperature/any_event/temperature|unit<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>°C<span class="pl-pds">"</span></span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>vital_signs/blood_pressure/any_event/systolic<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-cn">120</span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>vital_signs/blood_pressure/any_event/diastolic<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-cn">90</span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>vital_signs/height_length/any_event/body_height_length<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-cn">171</span>,
+    <span class="pl-s1"><span class="pl-pds">"</span>vital_signs/body_weight/any_event/body_weight<span class="pl-pds">"</span></span><span class="pl-ko">:</span> <span class="pl-cn">57.2</span>
+};
+<span class="pl-s">var</span> queryParams <span class="pl-ko">=</span> {
+    <span class="pl-s1"><span class="pl-pds">"</span>ehrId<span class="pl-pds">"</span></span><span class="pl-ko">:</span> ehrId,
+    templateId<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>Vital Signs<span class="pl-pds">'</span></span>,
+    format<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>FLAT<span class="pl-pds">'</span></span>,
+    committer<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>Belinda Nurse<span class="pl-pds">'</span></span>
+};
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/composition?<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> $.param(queryParams),
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>POST<span class="pl-pds">'</span></span>,
+    contentType<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>application/json<span class="pl-pds">'</span></span>,
+    data<span class="pl-ko">:</span> JSON.stringify(compositionData),
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>Store composition<span class="pl-pds">"</span></span>);
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).html(res.meta.href);
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>Store composition
+
+https://rest.ehrscape.com/rest/v1/composition/75c7bb72-0e7f-4a06-983e-73833a5c9615::ehrscape.com::1
+</code></pre>
+
+<p>Let’s retrieve one of these measurements by using the view call
+<code>GET /view/{ehrId}/blood_pressure</code>:</p>
+
+<div class="highlight highlight-js"><pre>$.ajaxSetup({
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    }
+});
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/view/<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/blood_pressure<span class="pl-pds">"</span></span>,
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>Blood pressures<span class="pl-pds">"</span></span>);
+        <span class="pl-k">for</span> (<span class="pl-s">var</span> i <span class="pl-ko">in</span> res) {
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(res[i]<span class="pl-sf">.time</span> <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>: <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> res[i].systolic <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>/<span class="pl-pds">'</span></span> <span class="pl-ko">+</span> res[i].diastolic <span class="pl-ko">+</span> res[i].unit <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>&lt;br&gt;<span class="pl-pds">"</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>Blood pressures
+
+2014-03-19T13:10:00.000Z: 120/90mm[Hg]
+</code></pre>
+
+<h2>
+<a id="query-data-using-aql" class="anchor" href="#query-data-using-aql" aria-hidden="true"><span class="octicon octicon-link"></span></a>Query data using AQL</h2>
+
+<p>The purpose of this example is to show how to use a very simple
+<a href="http://www.openehr.org/wiki/display/spec/Archetype+Query+Language+Description">AQL</a>
+for querying.</p>
+
+<p>The following API call is used:</p>
+
+<ul>
+<li>  <code>GET /query</code>: queries data using AQL (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkehr&amp;service=/query&amp;operation=/query&amp;method=GET&amp;inline=false">see
+details</a>)</li>
+</ul>
+
+<div class="highlight highlight-js"><pre>$.ajaxSetup({
+    headers<span class="pl-ko">:</span> {
+        <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+    }
+});
+<span class="pl-s">var</span> aql <span class="pl-ko">=</span> <span class="pl-s1"><span class="pl-pds">"</span>SELECT c/uid/value as uid, <span class="pl-pds">"</span></span> <span class="pl-ko">+</span>
+    <span class="pl-s1"><span class="pl-pds">"</span>c/context/start_time as time, <span class="pl-pds">"</span></span> <span class="pl-ko">+</span>
+    <span class="pl-s1"><span class="pl-pds">"</span>c/name/value as name <span class="pl-pds">"</span></span> <span class="pl-ko">+</span>
+    <span class="pl-s1"><span class="pl-pds">"</span>FROM EHR[ehr_id/value = '<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>'] CONTAINS COMPOSITION c <span class="pl-pds">"</span></span> <span class="pl-ko">+</span>
+    <span class="pl-s1"><span class="pl-pds">"</span>ORDER BY c/context/start_time DESC<span class="pl-pds">"</span></span>;
+$.ajax({
+    url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/query?<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> $.param({<span class="pl-s1"><span class="pl-pds">"</span>aql<span class="pl-pds">"</span></span><span class="pl-ko">:</span> aql}),
+    type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+    <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+        $(<span class="pl-s1"><span class="pl-pds">"</span>#header<span class="pl-pds">"</span></span>).html(<span class="pl-s1"><span class="pl-pds">"</span>Compositions<span class="pl-pds">"</span></span>);
+        <span class="pl-s">var</span> rows <span class="pl-ko">=</span> res.resultSet;
+        <span class="pl-k">for</span> (<span class="pl-s">var</span> i <span class="pl-ko">in</span> rows) {
+            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(rows[i].uid <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span>: <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> rows[i].name <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">'</span> (on <span class="pl-pds">'</span></span> <span class="pl-ko">+</span>
+                                rows[i]<span class="pl-sf">.time</span>.value <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>)&lt;br&gt;<span class="pl-pds">"</span></span>);
+        }
+    }
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>Compositions
+
+4f3e47ab-e350-4994-a15e-e819533aba14::ehrscape.com::1: Vital Signs (on 2014-03-09T20:25:20.000+01:00)
+fbc6d182-1720-4e99-aec9-b0f925639c66::ehrscape.com::1: Vital Signs (on 2014-03-07T18:31:54.000+01:00)
+a6568a7e-0cf9-483b-8691-adb46a9fdb6b::ehrscape.com::1: Medications (on 2014-02-09T01:08:27.000+01:00)
+</code></pre>
+
+<h2>
+<a id="clinical-decision-support" class="anchor" href="#clinical-decision-support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Clinical decision support</h2>
+
+<p>The purpose of this example is to show how to execute a simple guide
+using the CDS API.</p>
+
+<p>The following API call is used:</p>
+
+<ul>
+<li>  <code>GET /guide/execute/{guideId}/{ehrIds}</code>: executes CDS guide (<a href="https://dev.ehrscape.com/api-explorer.html?api=thinkcds&amp;service=/guide&amp;operation=/guide/execute/%7BguideId%7D/%7BehrIds%7D&amp;method=GET&amp;inline=false">see
+details</a>)</li>
+</ul>
+
+<div class="highlight highlight-js"><pre><span class="pl-s">function</span> <span class="pl-enf">bmi</span>() {
+    <span class="pl-k">return</span> $.ajax({
+        url<span class="pl-ko">:</span> cdsUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/guide/execute/BMI.Calculation.v.1/<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> ehrId,
+        type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">'</span>GET<span class="pl-pds">'</span></span>,
+        headers<span class="pl-ko">:</span> {
+            <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+        },
+        <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">data</span>) {
+            <span class="pl-k">if</span> (data <span class="pl-ko">instanceof</span> <span class="pl-sc">Array</span>) {
+                <span class="pl-k">if</span> (data[<span class="pl-cn">0</span>].hasOwnProperty(<span class="pl-s1"><span class="pl-pds">'</span>results<span class="pl-pds">'</span></span>)) {
+                    data[<span class="pl-cn">0</span>].results.forEach(<span class="pl-s">function</span> (<span class="pl-vpf">v</span>, <span class="pl-vpf">k</span>) {
+                        <span class="pl-k">if</span> (v.archetypeId <span class="pl-ko">===</span> <span class="pl-s1"><span class="pl-pds">'</span>openEHR-EHR-OBSERVATION.body_mass_index.v1<span class="pl-pds">'</span></span>) {
+                            <span class="pl-s">var</span> rounded <span class="pl-ko">=</span> <span class="pl-sc">Math</span>.<span class="pl-sf">round</span>(v.value.magnitude <span class="pl-ko">*</span> <span class="pl-cn">100.0</span>) / <span class="pl-cn">100.0</span>;
+                            $(<span class="pl-s1"><span class="pl-pds">"</span>#result<span class="pl-pds">"</span></span>).append(<span class="pl-s1"><span class="pl-pds">'</span>BMI: <span class="pl-pds">'</span></span> <span class="pl-ko">+</span> rounded);
+                        }
+                    })
+                }
+            }
+        }
+    });
+}
+
+<span class="pl-s">function</span> <span class="pl-enf">login</span>() {
+    <span class="pl-k">return</span> $.ajax({
+        type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>,
+        url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/session?<span class="pl-pds">"</span></span> <span class="pl-ko">+</span> $.param({username<span class="pl-ko">:</span> username, password<span class="pl-ko">:</span> password}),
+        <span class="pl-enf">success</span>: <span class="pl-s">function</span> (<span class="pl-vpf">res</span>) {
+            sessionId <span class="pl-ko">=</span> res.sessionId;
+        }
+    });
+}
+
+<span class="pl-s">function</span> <span class="pl-enf">logout</span>() {
+    <span class="pl-k">return</span> $.ajax({
+        type<span class="pl-ko">:</span> <span class="pl-s1"><span class="pl-pds">"</span>DELETE<span class="pl-pds">"</span></span>,
+        url<span class="pl-ko">:</span> baseUrl <span class="pl-ko">+</span> <span class="pl-s1"><span class="pl-pds">"</span>/session<span class="pl-pds">"</span></span>,
+        headers<span class="pl-ko">:</span> {
+            <span class="pl-s1"><span class="pl-pds">"</span>Ehr-Session<span class="pl-pds">"</span></span><span class="pl-ko">:</span> sessionId
+        }
+    });
+}
+
+login().done(<span class="pl-s">function</span>() {
+    $.when(bmi()).then(logout);
+});</pre></div>
+
+<p>which returns the following result:</p>
+
+<pre><code>BMI: 26.08
+</code></pre>
+        </section>
+
+        <footer>
+          Ascii-html is maintained by <a href="https://github.com/handihealth">handihealth</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
